@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/docker/docker/pkg/reexec"
 )
@@ -30,6 +32,16 @@ func nsInitialisation() {
 		fmt.Printf("error pivoting to new root fs.. - %s\n", err)
 		os.Exit(1)
 	}
+
+	if err := syscall.Sethostname([]byte("rushi_cont")); err != nil {
+		fmt.Printf("Error setting hostname - %s\n", err)
+		os.Exit(1)
+	}
+
+	if err := waitForNetwork(); err != nil {
+		fmt.Printf("error waiting for network - %s\n", err)
+		os.Exit(1)
+	}
 	nsRun()
 }
 
@@ -43,7 +55,7 @@ func nsRun() {
 	cmd.Env = []string{"PS1=-[ns-process]- # "}
 
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("error running the /bin/bash command")
+		fmt.Printf("error running the /bin/sh command - %s\n", err)
 		os.Exit(1)
 
 	}
@@ -114,10 +126,33 @@ func mountProc(newroot string) error {
 	return nil
 }
 
+func waitForNetwork() error {
+	maxWait := time.Second * 3
+	checkInterval := time.Second
+	timeStarted := time.Now()
+
+	for {
+		interfaces, err := net.Interfaces()
+		if err != nil {
+			return err
+		}
+
+		if len(interfaces) > 1 {
+			return nil
+		}
+
+		if time.Since(timeStarted) > maxWait {
+			return fmt.Errorf("time out")
+		}
+		time.Sleep(checkInterval)
+	}
+}
+
 func main() {
 	var rootfspath string = "/home/rootfs_new"
+	var netsetgoPath string = "/usr/local/bin/netsetgo"
 	cmd := reexec.Command("nsInitialisation", rootfspath)
-	println("running bash bruh")
+	println("running bash bruh.")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -147,8 +182,20 @@ func main() {
 		},
 	}
 
-	if err := cmd.Run(); err != nil {
-		fmt.Printf("error running /bin/bash command - %s\n", err)
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("error running /bin/sh command - %s\n", err)
+		os.Exit(1)
+	}
+
+	pid := fmt.Sprintf("%d", cmd.Process.Pid)
+	netsetgoCmd := exec.Command(netsetgoPath, "-pid", pid)
+	if err := netsetgoCmd.Run(); err != nil {
+		fmt.Printf("Error running the netsetgo func")
+		os.Exit(1)
+	}
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf("Error waiting for reexec command - %s\n", err)
 		os.Exit(1)
 	}
 }
