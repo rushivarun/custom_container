@@ -1,2 +1,11 @@
 # custom_container
-yaya this is private af| i just want to test the new line
+hopefully this will be big one day....
+## How to run?
+Clone the repository
+```
+git clone <repo-copy-url>
+```
+Run the main file
+```go
+go run main.go
+```
