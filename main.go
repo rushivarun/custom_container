@@ -46,13 +46,13 @@ func nsInitialisation() {
 }
 
 func nsRun() {
-	cmd := exec.Command("/bin/bash")
+	cmd := exec.Command("/bin/sh")
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	cmd.Env = []string{"PS1=-[ns-process]- # "}
+	cmd.Env = []string{"PS1=-[custom_cont]- # "}
 
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("error running the /bin/sh command - %s\n", err)
@@ -149,7 +149,7 @@ func waitForNetwork() error {
 }
 
 func main() {
-	var rootfspath string = "/home/rootfs_new"
+	var rootfspath string = "rootfs"
 	var netsetgoPath string = "/usr/local/bin/netsetgo"
 	cmd := reexec.Command("nsInitialisation", rootfspath)
 	println("running bash bruh.")
