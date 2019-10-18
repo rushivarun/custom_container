@@ -9,3 +9,13 @@ Run the main file
 ```go
 go run main.go
 ```
+## Whast's new?
+Added namespaces
+-- User
+-- UTS
+-- Mount
+-- Network
+
+## Contribute!
+The container is still having issues bridging the veth pair to the internet.
+For more look in the issues....
