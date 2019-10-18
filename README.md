@@ -1,5 +1,4 @@
 # custom_container
-hopefully this will be big one day....
 ## How to run?
 Clone the repository
 ```
