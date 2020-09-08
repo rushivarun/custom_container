@@ -1,6 +1,6 @@
 # custom_container
 ## How to run?
-Clone the repository
+Clone the repository..
 ```
 git clone <repo-copy-url>
 ```
